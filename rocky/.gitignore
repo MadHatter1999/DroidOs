@@ -7,3 +7,8 @@ __pycache__/
 
 # local LLM config may hold endpoint/keys; ship only the example
 rocky.conf.json
+
+# build artifacts
+packaging/deb/*.deb
+packaging/iso/live/
+packaging/iso/*.iso

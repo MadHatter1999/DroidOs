@@ -1,0 +1,10 @@
+# Keep the build image small and the build reproducible.
+packaging/iso/live/
+packaging/iso/*.iso
+packaging/deb/*.deb
+*.db
+*.db-wal
+*.db-shm
+__pycache__/
+rocky.conf.json
+.git/

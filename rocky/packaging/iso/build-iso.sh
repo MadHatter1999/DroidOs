@@ -43,4 +43,10 @@ lb build
 
 ISO="$(ls "$WORK"/*.iso | head -n1)"
 cp "$ISO" "$HERE/"
-echo "built $HERE/$(basename "$ISO")"
+# When run in the Docker container, /out is the mounted output folder (your
+# Downloads on Windows). Copy the finished ISO there.
+if [ -d /out ]; then
+    cp "$ISO" "/out/rocky-${DISTRO}-amd64.iso"
+    echo "copied ISO to /out/rocky-${DISTRO}-amd64.iso"
+fi
+echo "built $(basename "$ISO")"
