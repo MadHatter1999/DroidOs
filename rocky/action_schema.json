@@ -1,0 +1,7 @@
+{
+  "type": "action",
+  "kind": "debian.command | file.read | file.write | file.delete | memory.write | memory.search | notify | speak",
+  "risk": "read_only | write | network | private | destructive | privileged | forbidden",
+  "needs_confirmation": true,
+  "payload": {}
+}

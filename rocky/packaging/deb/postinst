@@ -1,0 +1,9 @@
+#!/bin/sh
+# Runs after the package is unpacked. Make rockyctl executable and link it onto PATH.
+set -e
+
+chmod 0755 /usr/lib/rocky/rockyctl
+ln -sf /usr/lib/rocky/rockyctl /usr/bin/rockyctl
+
+echo "Rocky installed. Run 'rockyctl init' as your user to create the database."
+exit 0

@@ -1,0 +1,35 @@
+# Physical and thermal limits (spec §24) for the wheeled body.
+
+battery:
+  motion_minimum_percent: 15.0
+  warn_percent: 25.0
+  critical_percent: 8.0
+  nominal_voltage: 24.0
+
+thermal:
+  motor_warn_temp_c: 65.0
+  motor_fault_temp_c: 80.0
+  controller_fault_temp_c: 90.0
+  cpu_warn_temp_c: 80.0
+  cpu_fault_temp_c: 95.0
+
+velocity:
+  max_linear_mps: 0.8
+  max_angular_rps: 1.5
+
+payload:
+  max_kg: 0.5
+
+joints:
+  default:
+    velocity_max: 12.0
+    effort_max: 30.0
+    current_max_a: 15.0
+    temp_fault_c: 80.0
+  utility_arm:
+    position_min: -1.2
+    position_max: 1.2
+    velocity_max: 2.0
+    effort_max: 10.0
+    current_max_a: 6.0
+    temp_fault_c: 75.0

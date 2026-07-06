@@ -1,0 +1,48 @@
+# Sensor manifest (spec §27). Sensors are plug-ins, not hardcoded. Navigation and
+# perception determine available functions from this list. The droid must not
+# claim measurements from a sensor that is not installed.
+
+sensors:
+  - id: camera/front
+    type: camera
+    topic: /sensors/camera/front/image
+    info_topic: /sensors/camera/front/info
+    rate_hz: 30
+    resolution: [1280, 720]
+    required: true
+
+  - id: imu/torso
+    type: imu
+    topic: /sensors/imu/torso
+    rate_hz: 200
+    required: true
+
+  - id: imu/pelvis
+    type: imu
+    topic: /sensors/imu/pelvis
+    rate_hz: 200
+    required: false
+
+  - id: foot/left/contact
+    type: contact
+    topic: /sensors/foot/left/contact
+    rate_hz: 200
+    required: true
+
+  - id: foot/right/contact
+    type: contact
+    topic: /sensors/foot/right/contact
+    rate_hz: 200
+    required: true
+
+  - id: microphone/array
+    type: microphone
+    topic: /sensors/audio/in
+    rate_hz: 16000
+    required: false
+
+  - id: battery/main
+    type: battery
+    topic: /sensors/battery/state
+    rate_hz: 1
+    required: true

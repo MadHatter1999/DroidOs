@@ -1,0 +1,20 @@
+# Simulation backend configuration (spec §26). Every body must support a simulated
+# backend before physical activation. The same commands drive both backends; only
+# the backend changes.
+
+simulation:
+  engine: mujoco
+  model: ig-mk1.mjcf          # physics model (not shipped in the reference repo)
+  timestep: 0.005
+  realtime_factor: 1.0
+  publish_camera: true
+  publish_contacts: true
+  publish_imu: true
+  # Injectable fault conditions for failure testing (spec §26).
+  fault_injection:
+    enabled: true
+    supported:
+      - motor_overheat
+      - sensor_dropout
+      - localization_loss
+      - safety_link_loss

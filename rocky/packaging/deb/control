@@ -1,0 +1,13 @@
+Package: rocky
+Version: 1.0.0
+Section: admin
+Priority: optional
+Architecture: all
+Depends: python3 (>= 3.9)
+Recommends: python3-yaml
+Maintainer: Rocky project <rocky@localhost>
+Description: Typed control layer for a local Debian LLM
+ Rocky sits between a local LLM and Debian. The LLM proposes typed actions.
+ A policy layer approves or refuses them. An executor runs only approved
+ actions as argv arrays, never through a shell. An audit log records every
+ action, decision, command, and result to SQLite.

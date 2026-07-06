@@ -1,0 +1,44 @@
+# DroidOS body package manifest (spec §20), wheeled astromech-style body.
+
+body_id: r2-mk1
+name: R2-D-Class
+model_family: astromech
+revision: mk1
+interface_revision: "1.0.0"
+description: >-
+  R2/R3-style wheeled astromech body. Differential drive over three legs, a
+  utility arm, dome-mounted forward camera and a 2D lidar. Cannot walk or climb.
+
+locomotion_type: differential
+
+files:
+  robot_description: robot.urdf.xacro
+  controllers: controllers.yaml
+  sensors: sensors.yaml
+  limits: limits.yaml
+  capabilities: capabilities.yaml
+  simulation: simulation.yaml
+  diagnostic_rules: diagnostic-rules.yaml
+  hardware_plugin: hardware-plugin.so
+  locomotion_plugin: locomotion-plugin.so
+
+hardware_profile: serial-v2
+
+# Wheeled bodies need no gait policy (spec §25 applies only to walking bodies).
+gait_policy: null
+
+required_sensors:
+  - camera/front
+  - imu/dome
+  - lidar/2d
+  - battery/main
+
+required_actuators:
+  - left_drive
+  - right_drive
+  - utility_arm
+
+signature:
+  algorithm: ed25519
+  key_id: droidos-body-signing-2026
+  value: "PLACEHOLDER_SIGNATURE"

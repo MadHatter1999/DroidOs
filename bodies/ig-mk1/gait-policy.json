@@ -1,0 +1,29 @@
+{
+  "format": "droidos-gait-json-v1",
+  "body_id": "ig-mk1",
+  "supported_body_revision": "mk1",
+  "control_rate_hz": 200,
+  "observation": [
+    "base_lin_vel", "base_ang_vel", "gravity_z",
+    "cmd_vx", "cmd_wz", "phase"
+  ],
+  "action": [
+    "left_hip_pitch", "left_knee", "left_ankle",
+    "right_hip_pitch", "right_knee", "right_ankle"
+  ],
+  "normalization": {
+    "obs_mean": [0.0, 0.0, -9.81, 0.0, 0.0, 0.0],
+    "obs_std": [0.5, 0.5, 1.0, 0.35, 0.8, 3.14159]
+  },
+  "safety_envelope": {
+    "max_action": 1.2,
+    "max_joint_vel": 8.0
+  },
+  "gait": {
+    "type": "cpg",
+    "step_freq_hz": 1.4,
+    "hip_amp": 0.35,
+    "knee_amp": 0.6,
+    "ankle_amp": 0.2
+  }
+}

@@ -1,0 +1,88 @@
+debian_read_only_commands:
+  - pwd
+  - whoami
+  - id
+  - uname
+  - hostname
+  - date
+  - uptime
+  - df
+  - du
+  - free
+  - ls
+  - cat
+  - head
+  - tail
+  - grep
+  - find
+  - stat
+  - file
+  - ps
+  - top
+  - ss
+  - ip
+  - lscpu
+  - lsblk
+  - mount
+  - env
+  - printenv
+  - which
+  - command
+
+dangerous_commands:
+  - sudo
+  - su
+  - rm
+  - rmdir
+  - mv
+  - cp
+  - chmod
+  - chown
+  - dd
+  - mkfs
+  - fdisk
+  - parted
+  - mount
+  - umount
+  - systemctl
+  - service
+  - apt
+  - apt-get
+  - dpkg
+  - pip
+  - pip3
+  - curl
+  - wget
+  - nc
+  - ssh
+  - scp
+  - rsync
+  - kill
+  - killall
+  - pkill
+  - reboot
+  - shutdown
+  - passwd
+  - useradd
+  - userdel
+  - usermod
+  - crontab
+  - tee
+  - sed
+  - awk
+  - python
+  - python3
+  - perl
+  - bash
+  - sh
+
+forbidden_patterns:
+  - "rm -rf /"
+  - "rm -rf /*"
+  - "mkfs"
+  - "dd if="
+  - ":(){ :|:& };:"
+  - "chmod -R 777 /"
+  - "chown -R"
+  - "> /dev/sd"
+  - "> /dev/nvme"

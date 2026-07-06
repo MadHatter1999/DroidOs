@@ -1,0 +1,7 @@
+# Deterministic status query used by droidctl (spec §13.2, §40).
+---
+DroidState state
+SafetyState safety
+BodyCapabilities capabilities
+uint16 fault_count
+string diagnostics_overall   # OK|WARN|ERROR|STALE

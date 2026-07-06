@@ -1,0 +1,7 @@
+# Select the active body package (spec §20). Owner-authorized, takes effect on the
+# next boot. Rejects incompatible or unknown bodies.
+string body_id
+string backend               # simulation|physical
+---
+bool accepted
+string message

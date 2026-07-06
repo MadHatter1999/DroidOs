@@ -1,0 +1,356 @@
+#!/usr/bin/env python3
+"""rockyctl, local command wrapper for the Rocky Debian control layer.
+
+  rockyctl init
+  rockyctl ask "check disk space"
+  rockyctl propose action.json
+  rockyctl memory add preference "User wants direct answers."
+  rockyctl memory search "direct answers"
+  rockyctl audit tail
+  rockyctl tools list
+  rockyctl capabilities
+
+The LLM proposes. The policy decides. The executor acts. The audit log remembers.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+
+# make the sibling modules importable no matter the current directory
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import audit
+import executor
+import memory
+import policy
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+
+VALID_KINDS = {
+    "debian.command", "file.read", "file.write", "file.delete",
+    "memory.write", "memory.search", "notify", "speak",
+}
+VALID_RISKS = {
+    "read_only", "write", "network", "private", "destructive", "privileged", "forbidden",
+}
+
+
+# --------------------------------------------------------------------------- #
+def validate_action(action: dict) -> list[str]:
+    errs: list[str] = []
+    if not isinstance(action, dict):
+        return ["action is not a JSON object"]
+    if action.get("type") != "action":
+        errs.append("type must be 'action'")
+    if action.get("kind") not in VALID_KINDS:
+        errs.append(f"kind must be one of {sorted(VALID_KINDS)}")
+    if action.get("risk") not in VALID_RISKS:
+        errs.append(f"risk must be one of {sorted(VALID_RISKS)}")
+    if not isinstance(action.get("payload", {}), dict):
+        errs.append("payload must be an object")
+    return errs
+
+
+def handle_action(action: dict, assume_yes: bool = False) -> dict:
+    """Full pipeline: validate -> policy -> (execute) -> audit. Returns a result."""
+    errs = validate_action(action)
+    if errs:
+        audit.log("schema_reject", "rockyctl", "; ".join(errs), {"action": action})
+        return {"ok": False, "denied": True, "reason": "; ".join(errs)}
+
+    verdict = policy.decide(action)
+    decision, reason = verdict["decision"], verdict["reason"]
+    action_id = audit.record_action(action, decision, reason)
+
+    if decision == "deny":
+        audit.update_action_status(action_id, "denied")
+        audit.log("decision", "policy", f"deny: {reason}", {"action_id": action_id})
+        return {"ok": False, "denied": True, "reason": reason, "action_id": action_id}
+
+    if decision == "ask_user" and not assume_yes:
+        audit.update_action_status(action_id, "awaiting_confirmation")
+        audit.log("decision", "policy", f"ask_user: {reason}", {"action_id": action_id})
+        return {"ok": False, "needs_confirmation": True, "reason": reason,
+                "action_id": action_id}
+
+    # allow, or ask_user confirmed with --yes
+    started = memory.now()
+    result = executor.run(action, action_id)
+    audit.record_tool_call(
+        action_id, action.get("kind", ""), action.get("payload", {}),
+        {k: result.get(k) for k in ("ok", "exit_code", "stdout", "stderr")},
+        result.get("exit_code"), started, memory.now(),
+    )
+    audit.update_action_status(action_id, "succeeded" if result.get("ok") else "failed")
+    audit.log("execute", "executor",
+              f"{action.get('kind')} exit={result.get('exit_code')}",
+              {"action_id": action_id, "ok": result.get("ok")})
+    return result
+
+
+# --------------------------------------------------------------------------- #
+def cmd_init(args) -> int:
+    path = memory.init_db()
+    audit.log("init", "rockyctl", "database initialised", {"path": path})
+    print(f"initialised database at {path}")
+    return 0
+
+
+def cmd_propose(args) -> int:
+    with open(args.file, "r", encoding="utf-8") as fh:
+        action = json.load(fh)
+    result = handle_action(action, assume_yes=args.yes)
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("ok") else 1
+
+
+def cmd_ask(args) -> int:
+    text = " ".join(args.text)
+    llm = resolve_llm()
+    if llm is None:
+        print("Rocky: no local LLM reachable. Set it in rocky.conf.json or export "
+              "ROCKY_LLM_URL, then start the server. See README.", file=sys.stderr)
+        return 2
+    audit.log("ask", "user", text, {"llm": llm["url"], "model": llm["model"]})
+    reply = call_llm(llm, text)
+    if reply is None:
+        print(f"Rocky: LLM at {llm['url']} did not respond.", file=sys.stderr)
+        return 2
+    action = _extract_action(reply)
+    if action is None:
+        print(reply.strip())              # plain answer, no action needed
+        return 0
+    result = handle_action(action, assume_yes=args.yes)
+    if args.json:
+        print(json.dumps(result, indent=2))
+    else:
+        print(summarize(llm, text, result))
+    return 0 if result.get("ok") else 1
+
+
+def cmd_memory(args) -> int:
+    if args.action == "add":
+        mem_id = memory.add(kind=args.kind, content=args.content, source="user")
+        audit.log("memory_add", "user", f"{args.kind}", {"id": mem_id})
+        print(f"stored {mem_id}")
+        return 0
+    if args.action == "search":
+        for row in memory.search(args.query):
+            print(f"[{row['kind']}] {row['content']}  ({row['created_at']})")
+        return 0
+    return 2
+
+
+def cmd_audit(args) -> int:
+    for row in audit.tail(args.limit):
+        print(f"{row['created_at']}  {row['kind']:<16} {row['risk']:<11} "
+              f"{row['decision'] or '-':<9} {row['status']:<12} {row['reason'] or ''}")
+    return 0
+
+
+def cmd_tools(args) -> int:
+    reg = policy.load_registry()
+    print("Approved (auto-run) read-only commands:")
+    for c in reg.get("debian_read_only_commands", []):
+        print(f"  {c}")
+    print("\nDangerous (confirmation required):")
+    for c in reg.get("dangerous_commands", []):
+        print(f"  {c}")
+    return 0
+
+
+def cmd_capabilities(args) -> int:
+    caps = policy.load_capabilities()
+    for name, cap in caps.items():
+        state = "enabled " if cap.get("enabled") else "disabled"
+        print(f"  [{state}] {name:<14} risk={cap.get('risk','?'):<11} "
+              f"{cap.get('description','')}")
+    return 0
+
+
+# --------------------------------------------------------------------------- #
+# local LLM wiring
+#
+# Resolution order: env vars, then rocky.conf.json, then probe common local
+# servers (Ollama, llama.cpp/LM Studio OpenAI-compatible). Supports two APIs:
+# "ollama" (/api/chat) and "openai" (/v1/chat/completions).
+# --------------------------------------------------------------------------- #
+CONFIG_PATH = os.path.join(HERE, "rocky.conf.json")
+
+# probed in order when nothing is configured: (api, url)
+PROBE_TARGETS = [
+    ("ollama", "http://localhost:11434"),
+    ("openai", "http://localhost:8080"),  # llama.cpp server
+    ("openai", "http://localhost:1234"),  # LM Studio
+]
+
+
+def load_config() -> dict:
+    if os.path.exists(CONFIG_PATH):
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as fh:
+                return json.load(fh)
+        except (OSError, json.JSONDecodeError):
+            return {}
+    return {}
+
+
+def resolve_llm() -> dict | None:
+    """Return {api, url, model, key} for a reachable local LLM, or None."""
+    env_url = os.environ.get("ROCKY_LLM_URL")
+    if env_url:
+        return {
+            "api": os.environ.get("ROCKY_LLM_API", "ollama"),
+            "url": env_url.rstrip("/"),
+            "model": os.environ.get("ROCKY_LLM_MODEL", "llama3"),
+            "key": os.environ.get("ROCKY_LLM_KEY"),
+        }
+    cfg = load_config().get("llm", {})
+    if cfg.get("url"):
+        return {
+            "api": cfg.get("api", "ollama"),
+            "url": str(cfg["url"]).rstrip("/"),
+            "model": cfg.get("model", "llama3"),
+            "key": os.environ.get(cfg["key_env"]) if cfg.get("key_env") else cfg.get("key"),
+        }
+    for api, url in PROBE_TARGETS:
+        model = _probe(api, url)
+        if model:
+            return {"api": api, "url": url, "model": model, "key": None}
+    return None
+
+
+def _probe(api: str, url: str) -> str | None:
+    """Return a usable model name if a server is up at url, else None."""
+    import urllib.request
+
+    path = "/api/tags" if api == "ollama" else "/v1/models"
+    try:
+        with urllib.request.urlopen(url + path, timeout=1.5) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+    except Exception:  # noqa: BLE001
+        return None
+    if api == "ollama":
+        models = body.get("models", [])
+        return models[0]["name"] if models else "llama3"
+    data = body.get("data", [])
+    return data[0]["id"] if data else "local-model"
+
+
+def _system_prompt() -> str:
+    with open(os.path.join(HERE, "agent_profile.md"), "r", encoding="utf-8") as fh:
+        profile = fh.read()
+    addition = (
+        "\nWhen action is required, output only valid JSON matching action_schema.json. "
+        "Do not wrap JSON in markdown. Use argv format: {\"command\": \"df\", "
+        "\"args\": [\"-h\"]}. Never produce raw shell strings. One action at a time. "
+        "If unsure, set needs_confirmation to true."
+    )
+    return profile + addition
+
+
+def call_llm(llm: dict, text: str, system: str | None = None) -> str | None:
+    import urllib.request
+
+    messages = [{"role": "system", "content": system or _system_prompt()},
+                {"role": "user", "content": text}]
+    if llm["api"] == "openai":
+        url = llm["url"] + "/v1/chat/completions"
+        payload = {"model": llm["model"], "messages": messages, "temperature": 0.0}
+    else:
+        url = llm["url"] + "/api/chat"
+        payload = {"model": llm["model"], "messages": messages, "stream": False}
+    req = urllib.request.Request(
+        url, data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"}, method="POST",
+    )
+    if llm.get("key"):
+        req.add_header("Authorization", f"Bearer {llm['key']}")
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            body = json.loads(resp.read().decode("utf-8"))
+    except Exception:  # noqa: BLE001 - unreachable LLM is a normal, handled case
+        return None
+    if llm["api"] == "openai":
+        return body.get("choices", [{}])[0].get("message", {}).get("content", "")
+    return body.get("message", {}).get("content", "")
+
+
+def summarize(llm: dict, request: str, result: dict) -> str:
+    """Ask the LLM to summarize the executed result. Falls back to plain text."""
+    if result.get("needs_confirmation"):
+        return f"Needs confirmation: {result.get('reason')}\n(re-run with --yes to confirm)"
+    if result.get("denied"):
+        return f"Denied: {result.get('reason')}"
+    system = ("Summarize the command result for the user in one or two plain "
+              "sentences. State the outcome. Do not invent data.")
+    prompt = f"Request: {request}\nResult JSON:\n{json.dumps(result)}"
+    reply = call_llm(llm, prompt, system=system)
+    if reply:
+        return reply.strip()
+    # fallback: no second LLM call available
+    if result.get("ok"):
+        out = (result.get("stdout") or "").strip()
+        return out or "Done."
+    return f"Failed: {(result.get('stderr') or 'unknown error').strip()}"
+
+
+def _extract_action(reply: str) -> dict | None:
+    """Return a typed action if the reply is one, else None (plain answer)."""
+    start = reply.find("{")
+    end = reply.rfind("}")
+    if start == -1 or end <= start:
+        return None
+    try:
+        obj = json.loads(reply[start:end + 1])
+    except json.JSONDecodeError:
+        return None
+    return obj if isinstance(obj, dict) and obj.get("type") == "action" else None
+
+
+# --------------------------------------------------------------------------- #
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="rockyctl", description="Rocky Debian control layer")
+    sub = p.add_subparsers(dest="command", required=True)
+
+    sub.add_parser("init", help="create the SQLite database")
+
+    a = sub.add_parser("ask", help="send text to the local LLM")
+    a.add_argument("text", nargs="+")
+    a.add_argument("--yes", action="store_true", help="auto-confirm ask_user actions")
+    a.add_argument("--json", action="store_true", help="print the raw result object")
+
+    pr = sub.add_parser("propose", help="validate and run/block/ask for an action")
+    pr.add_argument("file")
+    pr.add_argument("--yes", action="store_true", help="confirm an ask_user action")
+
+    m = sub.add_parser("memory")
+    msub = m.add_subparsers(dest="action", required=True)
+    ma = msub.add_parser("add"); ma.add_argument("kind"); ma.add_argument("content")
+    ms = msub.add_parser("search"); ms.add_argument("query")
+
+    au = sub.add_parser("audit")
+    au.add_argument("action", choices=["tail"])
+    au.add_argument("--limit", type=int, default=20)
+
+    tl = sub.add_parser("tools"); tl.add_argument("action", choices=["list"], nargs="?", default="list")
+    sub.add_parser("capabilities", help="show enabled/disabled capabilities")
+    return p
+
+
+def main(argv=None) -> int:
+    args = build_parser().parse_args(argv)
+    dispatch = {
+        "init": cmd_init, "ask": cmd_ask, "propose": cmd_propose,
+        "memory": cmd_memory, "audit": cmd_audit, "tools": cmd_tools,
+        "capabilities": cmd_capabilities,
+    }
+    return dispatch[args.command](args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

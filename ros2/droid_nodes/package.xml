@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>droid_nodes</name>
+  <version>1.0.0</version>
+  <description>ROS 2 lifecycle-node bridge for the DroidOS brain (roadmap M1)</description>
+  <maintainer email="droidos@example.invalid">DroidOS project</maintainer>
+  <license>Apache-2.0</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>lifecycle_msgs</exec_depend>
+  <exec_depend>droid_interfaces</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -1,0 +1,10 @@
+# Active body selection (spec §20). This picks which installed body package the
+# brain loads and whether it drives the simulated or physical backend.
+#
+# The mutable copy lives at $DROIDOS_STATE/body.yaml once `droidctl body set` is
+# run; this file is the shipped default.
+
+body_id: ig-mk1
+backend: simulation          # simulation | physical
+simulation_engine: mujoco
+hardware_profile: canfd-v1

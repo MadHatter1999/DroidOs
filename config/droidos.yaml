@@ -1,0 +1,50 @@
+# DroidOS system configuration (spec §15, §19). Loaded from /etc/droidos/droidos.yaml
+# on a target, or config/droidos.yaml in a checkout. Merged over built-in defaults.
+
+identity:
+  name: IG-12
+  model_family: assassin_droid
+  voice_profile: mechanical_01
+  personality_profile: dry_literal      # dry_literal | cheerful | formal | terse
+  verbosity: concise                    # concise | normal | verbose
+  wake_names:
+    - IG-12
+    - droid
+
+language:
+  # Provider is configuration, not core architecture (spec §15). The default is
+  # the deterministic offline provider so the reference brain runs with no model,
+  # no GPU and no network.
+  primary_provider: offline
+  fallback_provider: offline
+
+  providers:
+    offline:
+      type: offline
+
+    local:
+      type: llama_cpp
+      endpoint: unix:///run/droidos/llm.sock
+      model: /var/lib/droidos/models/default.gguf
+
+    home_server:
+      type: compatible_http
+      endpoint: https://droid-brain.local/v1
+      # Secrets are NEVER stored here or exposed to the LLM context (spec §15).
+      # They are read from a root-only credential file referenced by name:
+      api_key_ref: home_server
+
+voice:
+  # engine: text (no hardware, default) | audio (Vosk/whisper ASR + Piper TTS)
+  engine: text
+  require_wake_word: false        # if true, spoken commands must include a wake name
+  # asr_model: /var/lib/droidos/models/vosk-en
+  # tts_model: /var/lib/droidos/models/piper-en.onnx
+  # speakers: { owner-voiceprint-1: owner }   # hint only; auth still enforced (§32)
+
+safety:
+  battery_motion_minimum_percent: 20.0
+  motor_warn_temp_c: 70.0
+  motor_fault_temp_c: 85.0
+
+default_user: operator

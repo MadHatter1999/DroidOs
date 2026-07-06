@@ -1,0 +1,29 @@
+# Published capabilities (spec §21). The English interface reads these to decide
+# whether a requested action is even possible for this body.
+
+capabilities:
+  locomotion:
+    walk: true
+    roll: false
+    reverse: true
+    turn_in_place: true
+    stairs: experimental
+    maximum_speed_mps: 0.35
+
+  perception:
+    front_camera: true
+    rear_camera: false
+    lidar_2d: false
+    lidar_3d: false
+    microphones: true
+
+  manipulation:
+    left_arm: true
+    right_arm: true
+    grippers: false
+    maximum_payload_kg: 1.0
+
+  posture:
+    stand: true
+    crouch: true
+    self_right: false

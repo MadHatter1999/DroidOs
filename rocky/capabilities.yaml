@@ -1,0 +1,45 @@
+capabilities:
+  shell_read:
+    enabled: true
+    risk: read_only
+    description: Run allowlisted read-only Debian commands.
+
+  shell_write:
+    enabled: false
+    risk: write
+    description: Run commands that modify files or system state.
+
+  file_read:
+    enabled: true
+    risk: read_only
+    description: Read non-private user-approved files.
+
+  file_write:
+    enabled: false
+    risk: write
+    description: Write or append files.
+
+  file_delete:
+    enabled: false
+    risk: destructive
+    description: Delete files.
+
+  memory_read:
+    enabled: true
+    risk: read_only
+    description: Search Rocky memory.
+
+  memory_write:
+    enabled: true
+    risk: write
+    description: Store user preferences, facts, and project notes.
+
+  network:
+    enabled: false
+    risk: network
+    description: Use network access.
+
+  privileged:
+    enabled: false
+    risk: privileged
+    description: Use sudo, systemctl, package managers, or root-level operations.

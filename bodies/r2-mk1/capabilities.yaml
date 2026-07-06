@@ -1,0 +1,29 @@
+# Published capabilities (spec §21) for the wheeled astromech body.
+# Told to "walk upstairs", the brain reads walk=false/stairs=false and refuses
+# honestly, offering to navigate to the base of the stairs instead (spec §21).
+
+capabilities:
+  locomotion:
+    walk: false
+    roll: true
+    reverse: true
+    turn_in_place: true
+    stairs: false
+    maximum_speed_mps: 0.8
+
+  perception:
+    front_camera: true
+    rear_camera: false
+    lidar_2d: true
+    lidar_3d: false
+    microphones: true
+
+  manipulation:
+    utility_arm: true
+    grippers: false
+    maximum_payload_kg: 0.5
+
+  posture:
+    stand: false
+    crouch: false
+    self_right: false

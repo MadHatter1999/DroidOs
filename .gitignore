@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# DroidOS runtime state (would live under /var/lib/droidos on a target)
+/run-state/
+*.log
+var/
+
+# Yocto build output (never committed)
+build/
+tmp/
+sstate-cache/
+downloads/
+poky/
+meta-openembedded/
+meta-ros/
+*.wic
+*.img
+*.raucb
+*.tar.zst
+
+# Models are large binary artifacts, tracked out-of-band
+models/*.gguf
+models/*.onnx
+models/*.engine
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

@@ -1,0 +1,23 @@
+# Global simulation defaults (spec §26). Per-body overrides live in each body
+# package's simulation.yaml.
+defaults:
+  realtime_factor: 1.0
+  communication_delay_ms: 2
+  publish_rates:
+    camera_hz: 30
+    imu_hz: 200
+    lidar_hz: 10
+  faults_enabled: true
+
+# Scenarios used by the regression suite (spec §26 "regression testing").
+scenarios:
+  - name: nominal
+    faults: []
+  - name: overheat
+    faults: [{ kind: motor_overheat, joint: left_knee, temp: 90.0 }]
+  - name: blocked_hallway
+    faults: [{ kind: path_blocked, distance: 2.4 }]
+  - name: lost
+    faults: [{ kind: localization_loss }]
+  - name: safety_dropout
+    faults: [{ kind: safety_link_loss }]

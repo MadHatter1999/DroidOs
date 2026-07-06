@@ -1,0 +1,74 @@
+# DroidOS body package manifest (spec §20).
+# A signed body package describes one physical (or simulated) droid body.
+# The core brain is body-independent; only this package + the hardware backend
+# change between robots.
+
+body_id: ig-mk1
+name: IG-12
+model_family: assassin_droid
+revision: mk1
+interface_revision: "1.0.0"
+description: >-
+  Assassin-droid-style bipedal body. Two legs, two arms, torso IMU, single
+  forward camera, dual foot-contact sensors. CAN-FD joint bus.
+
+# One of: biped | differential | omni | tracked | stationary | manipulator
+locomotion_type: biped
+
+# Component files that make up this package (spec §20).
+files:
+  robot_description: robot.urdf.xacro
+  controllers: controllers.yaml
+  sensors: sensors.yaml
+  limits: limits.yaml
+  capabilities: capabilities.yaml
+  simulation: simulation.yaml
+  diagnostic_rules: diagnostic-rules.yaml
+  # On a real target these are compiled ros2_control plugins (spec §22).
+  # The reference brain selects a Python controller from locomotion_type.
+  hardware_plugin: hardware-plugin.so
+  locomotion_plugin: locomotion-plugin.so
+
+hardware_profile: canfd-v1
+
+# The gait policy that must be present and valid before biped motion is enabled
+# (spec §25). The brain rejects a policy whose body/checksum/observation layout
+# does not match.
+# A real, validated gait policy ships with this body (spec §25). The reference
+# build uses a dependency-free CPG policy described in JSON; a production build
+# swaps in the exported ONNX network with the same metadata and a fresh checksum.
+gait_policy:
+  file: gait-policy.json
+  checksum: "sha256:cd345447fbf2480370c42391a42d77f7a73ab710e345da27a4015230265c8228"
+  format: droidos-gait-json-v1
+  control_rate_hz: 200
+  supported_body_revision: mk1
+  approved_for_physical: true
+
+# Required hardware. If any of these is missing at boot the body is rejected or
+# the droid enters MOTION_INHIBITED (spec §9, §11).
+required_sensors:
+  - imu/torso
+  - camera/front
+  - foot/left/contact
+  - foot/right/contact
+
+required_actuators:
+  - left_hip_pitch
+  - left_hip_roll
+  - left_knee
+  - left_ankle
+  - right_hip_pitch
+  - right_hip_roll
+  - right_knee
+  - right_ankle
+  - torso_yaw
+  - left_shoulder
+  - right_shoulder
+
+# Package integrity. In production this is verified against the signing key
+# before the body is allowed to activate (spec §20, §40).
+signature:
+  algorithm: ed25519
+  key_id: droidos-body-signing-2026
+  value: "PLACEHOLDER_SIGNATURE"

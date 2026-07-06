@@ -1,0 +1,9 @@
+# SQLite database + WAL sidecars (runtime state, not source)
+rocky.db
+rocky.db-wal
+rocky.db-shm
+*.db
+__pycache__/
+
+# local LLM config may hold endpoint/keys; ship only the example
+rocky.conf.json

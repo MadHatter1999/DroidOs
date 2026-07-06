@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!--
+  DroidOS body description for the R2-class wheeled astromech (r2-mk1).
+  Abbreviated illustrative URDF (see ig-mk1/robot.urdf.xacro for notes).
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="r2_mk1">
+  <link name="base"/>
+  <link name="dome"/>
+  <link name="left_wheel"/>
+  <link name="right_wheel"/>
+  <link name="utility_arm_link"/>
+
+  <joint name="left_drive" type="continuous">
+    <parent link="base"/><child link="left_wheel"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="30" velocity="12"/>
+  </joint>
+
+  <joint name="right_drive" type="continuous">
+    <parent link="base"/><child link="right_wheel"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="30" velocity="12"/>
+  </joint>
+
+  <joint name="utility_arm" type="revolute">
+    <parent link="base"/><child link="utility_arm_link"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.2" upper="1.2" effort="10" velocity="2"/>
+  </joint>
+
+  <ros2_control name="r2_mk1_hardware" type="system">
+    <hardware>
+      <plugin>droidos_hardware/SerialSystem</plugin>
+      <param name="port">/dev/ttyDROID0</param>
+      <param name="profile">serial-v2</param>
+    </hardware>
+    <joint name="left_drive">
+      <command_interface name="velocity"/>
+      <state_interface name="velocity"/>
+      <state_interface name="temperature"/>
+      <state_interface name="current"/>
+    </joint>
+    <joint name="right_drive">
+      <command_interface name="velocity"/>
+      <state_interface name="velocity"/>
+      <state_interface name="temperature"/>
+      <state_interface name="current"/>
+    </joint>
+  </ros2_control>
+</robot>

@@ -1,0 +1,40 @@
+[Unit]
+# droid-language (spec §12.11, §31). The most heavily sandboxed service: it runs
+# LLM inference / provider access and must never reach motor devices, kernel
+# memory, raw storage, signing keys or the safety-controller configuration.
+Description=DroidOS language and interaction service
+After=droid-supervisor.service
+PartOf=droidos.target
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/droid-language
+Restart=on-failure
+RestartSec=2
+
+# Restricted account with no hardware access (spec §31).
+User=droid-language
+Group=droid-language
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+PrivateDevices=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+# Talks to the rest of the brain only over the DroidOS runtime socket.
+ReadWritePaths=/run/droidos
+# Models are read-only; approved memory is written via droid-memory, not directly.
+ReadOnlyPaths=/var/lib/droidos/models
+IPAddressDeny=any
+IPAddressAllow=localhost
+
+[Install]
+WantedBy=droidos.target

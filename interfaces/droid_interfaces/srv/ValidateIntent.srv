@@ -1,0 +1,10 @@
+# Ask the command broker to validate a proposed intent (spec §14). This is how the
+# language service submits proposals; approval is required before execution.
+StructuredIntent intent
+string user
+bool confirmed
+---
+string outcome               # approved|rejected|confirmation_required
+string reason
+string confirm_prompt
+string[] failed_checks

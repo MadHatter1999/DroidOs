@@ -1,0 +1,32 @@
+# User accounts and roles (spec §32). High-risk actions require an authenticated
+# role, not merely recognition of a familiar voice. In production, credentials are
+# stored in a protected database; this file only maps identities to roles.
+
+users:
+  - name: owner
+    role: owner
+    display_name: Primary Owner
+
+  - name: operator
+    role: operator
+    display_name: Operator
+
+  - name: guest
+    role: guest
+    display_name: Guest
+
+  - name: technician
+    role: service_technician
+    display_name: Service Technician
+
+# Roles and the permissions granted to each (spec §32). Referenced by the command
+# broker's authorization checks.
+roles:
+  owner:
+    description: Full control including body changes, updates, user and memory management.
+  operator:
+    description: Issue ordinary tasks, move the droid, request inspections, cancel tasks.
+  guest:
+    description: Converse and ask non-physical questions only.
+  service_technician:
+    description: Detailed diagnostics, hardware tests, calibration, maintenance mode.

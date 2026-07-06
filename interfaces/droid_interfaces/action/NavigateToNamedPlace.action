@@ -1,0 +1,12 @@
+# Navigate to a named destination (spec §12.8). The body adapter converts the
+# requested body velocity into walking or rolling; the collision monitor can stop
+# the droid outside the planner path.
+string destination
+string requested_speed       # cautious|normal
+---
+bool arrived
+string result               # arrived|blocked|localization_lost|cancelled|timeout
+float32 stopped_distance_m   # distance from an obstruction, if blocked
+---
+geometry_msgs/Pose2D pose
+float32 remaining_m

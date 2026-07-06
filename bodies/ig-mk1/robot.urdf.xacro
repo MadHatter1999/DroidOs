@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!--
+  DroidOS body description for IG-12 (ig-mk1), a bipedal assassin-droid body.
+
+  This is an abbreviated, illustrative URDF/xacro. A production body package ships
+  a complete kinematic tree with inertials, collision meshes, visual meshes and a
+  full <ros2_control> block (spec §20, §22). The reference brain does not parse the
+  URDF geometry; it validates presence and reads controllers.yaml / limits.yaml.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="ig_mk1">
+
+  <xacro:property name="knee_upper" value="2.4"/>
+
+  <link name="pelvis"/>
+  <link name="torso"/>
+  <link name="left_thigh"/>
+  <link name="left_shin"/>
+  <link name="left_foot"/>
+  <link name="right_thigh"/>
+  <link name="right_shin"/>
+  <link name="right_foot"/>
+
+  <joint name="torso_yaw" type="revolute">
+    <parent link="pelvis"/><child link="torso"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.57" upper="1.57" effort="40" velocity="6"/>
+  </joint>
+
+  <joint name="left_knee" type="revolute">
+    <parent link="left_thigh"/><child link="left_shin"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0.0" upper="${knee_upper}" effort="60" velocity="8"/>
+  </joint>
+
+  <joint name="right_knee" type="revolute">
+    <parent link="right_thigh"/><child link="right_shin"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="0.0" upper="${knee_upper}" effort="60" velocity="8"/>
+  </joint>
+
+  <!-- Remaining hip/ankle/shoulder joints omitted for brevity. -->
+
+  <ros2_control name="ig_mk1_hardware" type="system">
+    <hardware>
+      <!-- Physical: CAN-FD plugin. Simulation: mujoco system plugin. -->
+      <plugin>droidos_hardware/CanFdSystem</plugin>
+      <param name="bus">can0</param>
+      <param name="profile">canfd-v1</param>
+    </hardware>
+    <joint name="left_knee">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <state_interface name="effort"/>
+      <state_interface name="temperature"/>
+      <state_interface name="current"/>
+    </joint>
+  </ros2_control>
+</robot>

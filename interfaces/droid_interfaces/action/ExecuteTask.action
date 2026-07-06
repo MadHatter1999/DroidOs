@@ -1,0 +1,11 @@
+# Execute an approved task (spec §12.10, §38). Only reached after the command
+# broker approves the corresponding intent.
+StructuredIntent intent
+string user
+---
+bool ok
+string result_json          # structured result rendered to English by the language service
+string error
+---
+string stage                # feedback: current behaviour-tree stage
+float32 progress            # 0.0 - 1.0

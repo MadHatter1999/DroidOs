@@ -1,0 +1,17 @@
+{
+  "llm": {
+    "api": "ollama",
+    "url": "http://localhost:11434",
+    "model": "llama3",
+    "key_env": null
+  },
+
+  "_openai_compatible_example": {
+    "api": "openai",
+    "url": "http://localhost:8080",
+    "model": "local-model",
+    "key_env": "ROCKY_LLM_KEY"
+  },
+
+  "_notes": "Copy to rocky.conf.json and edit. Env vars ROCKY_LLM_URL / ROCKY_LLM_API / ROCKY_LLM_MODEL / ROCKY_LLM_KEY override this file. If neither is set, rockyctl probes localhost:11434 (Ollama), :8080 (llama.cpp), :1234 (LM Studio)."
+}

@@ -1,0 +1,34 @@
+[Unit]
+# droid-safety-gateway (spec §12.2). Must be up and healthy before any motion is
+# possible. Talks to the independent safety microcontroller over its dedicated
+# serial/CAN link; that MCU remains authoritative for motor power (spec §24).
+Description=DroidOS safety gateway
+DefaultDependencies=no
+After=basic.target
+Before=droid-supervisor.service
+Conflicts=shutdown.target
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/droid-safety-gateway
+Restart=always
+RestartSec=1
+WatchdogSec=2
+
+# Least privilege (spec §31): the safety gateway needs only its control device.
+User=droid-safety
+Group=droid-safety
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+MemoryDenyWriteExecute=true
+DeviceAllow=/dev/droid-safety rw
+DevicePolicy=closed
+
+[Install]
+WantedBy=droidos.target

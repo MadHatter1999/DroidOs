@@ -1,0 +1,8 @@
+# Speak text through the voice service (spec §12.12). Interruptible; emergency
+# command detection remains active while speaking.
+string text
+string voice_profile         # optional override
+---
+bool spoken
+---
+float32 progress             # 0.0 - 1.0

@@ -1,0 +1,28 @@
+# Body-specific diagnostic rules (spec §28). droid-diagnostics applies these
+# thresholds to raw hardware readings to derive OK / WARN / ERROR status.
+
+rules:
+  motor_temperature:
+    warn_c: 70.0
+    error_c: 85.0
+    applies_to: actuator
+  controller_temperature:
+    warn_c: 80.0
+    error_c: 95.0
+    applies_to: actuator
+  battery_percent:
+    warn_below: 30.0
+    error_below: 10.0
+    applies_to: battery
+  sensor_staleness:
+    warn_seconds: 0.5
+    error_seconds: 2.0
+    applies_to: sensor
+  localization_confidence:
+    warn_below: 0.6
+    error_below: 0.4
+    applies_to: robot
+  balance_margin:
+    warn_below: 0.15
+    error_below: 0.05
+    applies_to: robot

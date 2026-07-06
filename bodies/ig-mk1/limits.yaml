@@ -1,0 +1,48 @@
+# Physical and thermal limits (spec §24, §28). These are hard values enforced by
+# the safety controller / motor controllers; the brain never exceeds them and the
+# LLM cannot edit them (spec §19, §17).
+
+battery:
+  motion_minimum_percent: 20.0
+  warn_percent: 30.0
+  critical_percent: 10.0
+  nominal_voltage: 36.0
+
+thermal:
+  motor_warn_temp_c: 70.0
+  motor_fault_temp_c: 85.0
+  controller_fault_temp_c: 95.0
+  cpu_warn_temp_c: 80.0
+  cpu_fault_temp_c: 95.0
+
+velocity:
+  max_linear_mps: 0.35
+  max_angular_rps: 0.8
+
+payload:
+  max_kg: 1.0
+
+# Per-joint limits (radians, rad/s, amps, celsius). Abbreviated for the reference
+# body; a production URDF encodes the full set.
+joints:
+  default:
+    position_min: -2.6
+    position_max: 2.6
+    velocity_max: 6.0
+    effort_max: 40.0
+    current_max_a: 20.0
+    temp_fault_c: 85.0
+  left_knee:
+    position_min: 0.0
+    position_max: 2.4
+    velocity_max: 8.0
+    effort_max: 60.0
+    current_max_a: 30.0
+    temp_fault_c: 85.0
+  right_knee:
+    position_min: 0.0
+    position_max: 2.4
+    velocity_max: 8.0
+    effort_max: 60.0
+    current_max_a: 30.0
+    temp_fault_c: 85.0

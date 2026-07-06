@@ -1,0 +1,19 @@
+# Body-specific diagnostic rules (spec §28) for the wheeled body.
+
+rules:
+  motor_temperature:
+    warn_c: 65.0
+    error_c: 80.0
+    applies_to: actuator
+  battery_percent:
+    warn_below: 25.0
+    error_below: 8.0
+    applies_to: battery
+  sensor_staleness:
+    warn_seconds: 0.5
+    error_seconds: 2.0
+    applies_to: sensor
+  localization_confidence:
+    warn_below: 0.6
+    error_below: 0.4
+    applies_to: robot

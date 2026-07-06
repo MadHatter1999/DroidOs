@@ -1,0 +1,32 @@
+# ros2_control controller configuration (spec §22). On a real target this is the
+# controller_manager parameter file. The reference brain reads controller_type to
+# select the matching software controller in droid-motion.
+
+controller_manager:
+  update_rate: 200  # Hz
+
+controllers:
+  joint_state_broadcaster:
+    type: joint_state_broadcaster/JointStateBroadcaster
+
+  biped_gait_controller:
+    type: droidos_control/BipedGaitController
+    joints:
+      - left_hip_pitch
+      - left_hip_roll
+      - left_knee
+      - left_ankle
+      - right_hip_pitch
+      - right_hip_roll
+      - right_knee
+      - right_ankle
+    command_interfaces: [position]
+    state_interfaces: [position, velocity, effort, temperature, current]
+    # The gait controller consumes the trained walking policy (spec §25).
+    policy_ref: gait_policy
+
+  arm_controller:
+    type: joint_trajectory_controller/JointTrajectoryController
+    joints: [left_shoulder, right_shoulder, torso_yaw]
+    command_interfaces: [position]
+    state_interfaces: [position, velocity, effort, temperature]

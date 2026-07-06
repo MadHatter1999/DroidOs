@@ -1,0 +1,26 @@
+[Unit]
+# droid-supervisor (spec §12.1): the highest non-hardware authority. It runs the
+# boot sequence (spec §8), brings up the managed services in dependency order and
+# refuses to permit motion until every required check passes.
+Description=DroidOS supervisor
+Requires=droid-safety-gateway.service
+After=droid-safety-gateway.service
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/droidctl-supervisor
+Restart=on-failure
+RestartSec=2
+WatchdogSec=5
+
+User=droid-supervisor
+Group=droid-supervisor
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/droidos /var/log/droidos /run/droidos
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelModules=true
+
+[Install]
+WantedBy=droidos.target

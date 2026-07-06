@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- Stable public DroidOS interfaces (spec §37). These let the implementation
+     behind a service change without breaking the rest of the OS. -->
+<package format="3">
+  <name>droid_interfaces</name>
+  <version>1.0.0</version>
+  <description>DroidOS message, service and action definitions</description>
+  <maintainer email="droidos@example.invalid">DroidOS project</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+
+  <build_depend>rosidl_default_generators</build_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

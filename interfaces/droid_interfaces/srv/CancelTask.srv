@@ -1,0 +1,5 @@
+# Cancel the active task (spec §17, always available).
+string task_id               # empty = current task
+---
+bool cancelled
+string message

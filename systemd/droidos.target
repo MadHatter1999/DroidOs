@@ -1,0 +1,7 @@
+[Unit]
+# The DroidOS runtime target (spec §8). Reached after the base system is up; it
+# does NOT by itself enable movement, the supervisor gates that (spec §40).
+Description=DroidOS runtime
+Requires=droid-supervisor.service
+After=droid-supervisor.service
+AllowIsolate=yes

@@ -1,0 +1,23 @@
+# ros2_control configuration (spec §22) for the differential-drive wheeled body.
+
+controller_manager:
+  update_rate: 100  # Hz
+
+controllers:
+  joint_state_broadcaster:
+    type: joint_state_broadcaster/JointStateBroadcaster
+
+  diff_drive_controller:
+    type: diff_drive_controller/DiffDriveController
+    left_wheel_names: [left_drive]
+    right_wheel_names: [right_drive]
+    wheel_separation: 0.42
+    wheel_radius: 0.10
+    command_interfaces: [velocity]
+    state_interfaces: [position, velocity, temperature, current]
+
+  arm_controller:
+    type: joint_trajectory_controller/JointTrajectoryController
+    joints: [utility_arm]
+    command_interfaces: [position]
+    state_interfaces: [position, velocity, temperature]

@@ -1,0 +1,12 @@
+# Navigate to a place and inspect a named target (spec §38). The result separates
+# observation from interpretation: it reports what was measured and a confidence,
+# not a diagnosis.
+string destination           # optional; empty = inspect from current position
+string target
+---
+bool found
+string observations_json     # e.g. indicator counts, open doors
+float32 confidence
+string note
+---
+string stage

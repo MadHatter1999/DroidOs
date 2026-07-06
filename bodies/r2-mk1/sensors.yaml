@@ -1,0 +1,36 @@
+# Sensor manifest (spec §27) for the wheeled body. A lidar-equipped body publishes
+# additional range information the biped body does not have.
+
+sensors:
+  - id: camera/front
+    type: camera
+    topic: /sensors/camera/front/image
+    info_topic: /sensors/camera/front/info
+    rate_hz: 30
+    resolution: [1280, 720]
+    required: true
+
+  - id: imu/dome
+    type: imu
+    topic: /sensors/imu/dome
+    rate_hz: 100
+    required: true
+
+  - id: lidar/2d
+    type: lidar_2d
+    topic: /sensors/lidar/scan
+    rate_hz: 10
+    range_max_m: 12.0
+    required: true
+
+  - id: battery/main
+    type: battery
+    topic: /sensors/battery/state
+    rate_hz: 1
+    required: true
+
+  - id: microphone/array
+    type: microphone
+    topic: /sensors/audio/in
+    rate_hz: 16000
+    required: false
